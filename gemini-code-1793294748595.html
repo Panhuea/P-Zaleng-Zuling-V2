@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P-zaleng zuling - พี่ซาเล้งรับขยะ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col justify-between">
+
+    <div class="max-w-md mx-auto w-full bg-white min-h-screen shadow-lg flex flex-col justify-between relative">
+        
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-amber-600 to-amber-500 text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-20">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-truck-pickup text-2xl text-amber-100"></i>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">P-zaleng zuling</h1>
+                    <p class="text-[10px] text-amber-100">ระบบพี่ซาเล้งรับซื้อขยะ</p>
+                </div>
+            </div>
+            <div id="salengInfoHeader" class="hidden text-right">
+                <span class="text-xs font-semibold bg-amber-800/60 backdrop-blur-sm px-3 py-1 rounded-full border border-amber-400/30">
+                    <i class="fa-solid fa-id-badge mr-1 text-amber-200"></i> <span id="salengName">พี่ซาเล้ง</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="p-4 flex-grow flex flex-col justify-between">
+
+            <!-- 1. Saleng Register Screen (First Time) -->
+            <div id="salengRegisterScreen" class="space-y-4 my-auto">
+                <div class="text-center space-y-2">
+                    <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800">ลงทะเบียนซาเล้งรับขยะ</h2>
+                    <p class="text-xs text-gray-500">กรอกข้อมูลเพื่อรับงานและโอนแต้มให้ผู้ทิ้งขยะ</p>
+                </div>
+
+                <form onsubmit="saveSalengProfile(event)" class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อ-นามสกุล / ชื่อเรียก <span class="text-red-500">*</span></label>
+                        <input type="text" id="salengInputName" required class="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm" placeholder="เช่น พี่สมศักดิ์ ขยันเก็บ">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">เบอร์โทรศัพท์ติดต่อ <span class="text-red-500">*</span></label>
+                        <input type="tel" id="salengInputPhone" required pattern="[0-9]{9,10}" class="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm" placeholder="เช่น 0898765432">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">เขต/พื้นที่วิ่งรับงานประจำ <span class="text-red-500">*</span></label>
+                        <input type="text" id="salengInputZone" required class="w-full p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm" placeholder="เช่น สุขุมวิท - เอกมัย - ทองหล่อ">
+                    </div>
+                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-lg font-bold shadow-md transition duration-200">
+                        เริ่มรับงานเลย <i class="fa-solid fa-truck-fast ml-1"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. Saleng Main Dashboard -->
+            <div id="salengDashboard" class="hidden space-y-4">
+
+                <!-- Saleng Points Card -->
+                <div class="bg-gradient-to-br from-amber-500 to-amber-700 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-15 text-8xl">
+                        <i class="fa-solid fa-truck-pickup"></i>
+                    </div>
+                    <div class="relative z-10 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-amber-100 font-light">แต้มสะสมสำหรับจ่ายผู้ทิ้งขยะ</p>
+                            <p class="text-4xl font-extrabold mt-1 tracking-tight"><span id="salengPoints">500</span> <span class="text-base font-normal text-amber-200">แต้ม</span></p>
+                        </div>
+                        <button onclick="addSalengPoints()" class="bg-white/20 hover:bg-white/30 active:scale-95 transition backdrop-blur-md px-3 py-2 rounded-xl flex items-center space-x-1.5 text-xs font-bold border border-white/30 shadow-sm">
+                            <i class="fa-solid fa-circle-plus text-amber-200 text-base"></i>
+                            <span>เติมแต้ม</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation Action Buttons -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="toggleSalengSection('salengMap')" id="btnSalengMap" class="bg-amber-50 border-2 border-amber-500 text-amber-700 p-4 rounded-xl flex flex-col items-center justify-center space-y-2 hover:bg-amber-100 active:scale-95 transition shadow-sm">
+                        <i class="fa-solid fa-map-location-dot text-2xl text-amber-600"></i>
+                        <span class="font-bold text-sm">แผนที่รับงาน</span>
+                    </button>
+                    <button onclick="toggleSalengSection('salengPay')" id="btnSalengPay" class="bg-blue-50 border-2 border-blue-200 text-blue-700 p-4 rounded-xl flex flex-col items-center justify-center space-y-2 hover:bg-blue-100 active:scale-95 transition shadow-sm">
+                        <i class="fa-solid fa-hand-holding-dollar text-2xl text-blue-600"></i>
+                        <span class="font-bold text-sm">จ่ายแต้มค่าขยะ</span>
+                    </button>
+                </div>
+
+                <!-- Section: Map simulation -->
+                <div id="salengMap" class="border border-amber-200 p-4 rounded-2xl bg-amber-50/30 space-y-3 shadow-sm">
+                    <div class="flex justify-between items-center border-b border-amber-100 pb-2">
+                        <h3 class="font-bold text-gray-800 text-sm flex items-center">
+                            <i class="fa-solid fa-compass text-amber-600 mr-1.5"></i> หมุดเรียกรับขยะใกล้ตัวคุณ
+                        </h3>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">เปิดรับงานอยู่</span>
+                    </div>
+
+                    <!-- Simulated Map Graphic -->
+                    <div class="w-full h-44 bg-slate-200 rounded-xl relative overflow-hidden border border-slate-300 shadow-inner flex flex-col justify-between p-3">
+                        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:12px_12px]"></div>
+                        
+                        <!-- Saleng Location Pin -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-600 flex flex-col items-center z-10">
+                            <i class="fa-solid fa-truck-pickup text-xl bg-white p-1.5 rounded-full shadow-md border border-blue-400"></i>
+                            <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold mt-0.5 shadow">ตำแหน่งคุณ</span>
+                        </div>
+
+                        <!-- Waste Job Pins -->
+                        <button onclick="focusJob(1)" class="absolute top-6 left-10 text-red-500 animate-bounce hover:scale-125 transition">
+                            <i class="fa-solid fa-location-dot text-2xl drop-shadow"></i>
+                        </button>
+                        
+                        <button onclick="focusJob(2)" class="absolute bottom-6 right-12 text-red-500 animate-bounce hover:scale-125 transition">
+                            <i class="fa-solid fa-location-dot text-2xl drop-shadow"></i>
+                        </button>
+
+                        <div class="z-10 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] text-gray-600 shadow border border-gray-200 self-start">
+                            <i class="fa-solid fa-circle text-emerald-500 text-[8px] mr-1"></i> แสดงหมุดหมวดหมู่ Recycle
+                        </div>
+                    </div>
+
+                    <!-- Job List -->
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold text-gray-700">รายการเรียกรอรับงาน (<span id="jobCount">2</span> รายการ)</p>
+                        <div id="jobList" class="space-y-2">
+                            <!-- Dynamic Jobs -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Transfer Points -->
+                <div id="salengPay" class="hidden border border-blue-200 p-4 rounded-2xl bg-blue-50/30 space-y-3 shadow-sm">
+                    <div class="flex items-center space-x-2 border-b border-blue-100 pb-2">
+                        <i class="fa-solid fa-coins text-blue-600"></i>
+                        <h3 class="font-bold text-gray-800 text-sm">โอนแต้มสะสมให้ผู้ทิ้งขยะ</h3>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">เลือกผู้รับแต้ม / ลูกค้า</label>
+                        <select id="payTargetSelect" class="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="คุณสมชาย (ซอยสุขุมวิท 21)">คุณสมชาย (ซอยสุขุมวิท 21)</option>
+                            <option value="คุณวิภา (ปากซอย 23)">คุณวิภา (ปากซอย 23)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">ระบุจำนวนแต้มที่โอน (1 แต้ม = 1 บาทโดยประมาณ)</label>
+                        <div class="relative">
+                            <input type="number" id="payPointsInput" class="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none pl-3 pr-12" placeholder="เช่น 50">
+                            <span class="absolute right-3 top-2.5 text-xs text-gray-400">แต้ม</span>
+                        </div>
+                    </div>
+
+                    <button onclick="transferPoints()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white py-2.5 rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>ยืนยันการจ่ายแต้ม</span>
+                    </button>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Footer Profile -->
+        <footer class="p-3 border-t bg-gray-50 text-center">
+            <button id="btnEditSalengProfile" onclick="editSalengProfile()" class="hidden text-xs text-gray-500 hover:text-amber-600 font-medium transition">
+                <i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไขข้อมูลพื้นที่รับงาน
+            </button>
+            <p class="text-[10px] text-gray-400 mt-1">P-zaleng zuling Platform © 2026</p>
+        </footer>
+
+    </div>
+
+    <!-- Modal: คำนวณความคุ้มค่าก่อนรับงาน -->
+    <div id="calcModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-4 space-y-4 shadow-2xl border border-gray-100">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-gray-800 flex items-center">
+                    <i class="fa-solid fa-calculator text-amber-600 mr-2"></i>ประเมินความคุ้มค่า
+                </h3>
+                <button onclick="closeCalcModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2 text-xs">
+                <p id="calcJobName" class="font-bold text-amber-700"></p>
+                <p id="calcJobDesc" class="text-gray-600 bg-gray-50 p-2 rounded border border-gray-100"></p>
+
+                <div class="pt-2 space-y-2">
+                    <div>
+                        <label class="block text-[11px] text-gray-500">ระยะทาง (กิโลเมตร)</label>
+                        <input type="number" id="calcDistance" step="0.1" class="w-full p-2 bg-gray-50 border rounded text-xs font-bold" oninput="calculateCost()">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] text-gray-500">ราคาน้ำมัน (บาท/ลิตร)</label>
+                            <input type="number" id="calcFuelPrice" step="0.01" value="41.54" class="w-full p-2 bg-gray-50 border rounded text-xs font-bold" oninput="calculateCost()">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-500">อัตรากินน้ำมัน (ลิตร/กม.)</label>
+                            <input type="number" id="calcFuelRate" step="0.01" value="0.08" class="w-full p-2 bg-gray-50 border rounded text-xs font-bold" oninput="calculateCost()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Box -->
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center space-y-1">
+                    <p class="text-[11px] text-amber-800">ประมาณการค่าน้ำมัน (ต้นทุน)</p>
+                    <p class="text-2xl font-extrabold text-amber-600" id="calcResultCost">0.00 บาท</p>
+                    <p class="text-[10px] text-gray-500" id="calcFormulaHint">สูตร: ระยะทาง × ราคาน้ำมัน × อัตราสิ้นเปลือง</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-2 pt-1">
+                <button onclick="closeCalcModal()" class="w-1/2 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs">ยกเลิก</button>
+                <button onclick="confirmAcceptJob()" class="w-1/2 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md">ยืนยันรับงานนี้</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Modal -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center space-x-2 transition-all duration-300 opacity-0 pointer-events-none z-50">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-amber-400"></i>
+        <span id="toastMessage">ข้อความแจ้งเตือน</span>
+    </div>
+
+    <script>
+        // Saleng State
+        let salengProfile = {
+            name: '',
+            phone: '',
+            zone: '',
+            points: 500
+        };
+
+        let activeJobs = [
+            { id: 1, name: 'คุณสมชาย', address: 'ซอยสุขุมวิท 21', desc: 'ขวดพลาสติกใส 5 กก. + กระดาษลัง', distance: 2.5, status: 'รอรับ' },
+            { id: 2, name: 'คุณวิภา', address: 'ซอยสุขุมวิท 23', desc: 'กระป๋องน้ำอัดลม 2 ถุงใหญ่', distance: 4.0, status: 'รอรับ' }
+        ];
+
+        let selectedJobForCalc = null;
+
+        // Check Startup
+        window.onload = function() {
+            const savedSaleng = localStorage.getItem('zaleng_saleng_data');
+            if (savedSaleng) {
+                salengProfile = JSON.parse(savedSaleng);
+                if (salengProfile.points === undefined) salengProfile.points = 500;
+                showSalengDashboard();
+            }
+        };
+
+        // Save Saleng Profile
+        function saveSalengProfile(e) {
+            e.preventDefault();
+            salengProfile.name = document.getElementById('salengInputName').value.trim();
+            salengProfile.phone = document.getElementById('salengInputPhone').value.trim();
+            salengProfile.zone = document.getElementById('salengInputZone').value.trim();
+            if (salengProfile.points === undefined) salengProfile.points = 500;
+
+            localStorage.setItem('zaleng_saleng_data', JSON.stringify(salengProfile));
+            showToast('ลงทะเบียนพี่ซาเล้งสำเร็จ');
+            showSalengDashboard();
+        }
+
+        // Show Dashboard
+        function showSalengDashboard() {
+            document.getElementById('salengRegisterScreen').classList.add('hidden');
+            document.getElementById('salengDashboard').classList.remove('hidden');
+            document.getElementById('salengInfoHeader').classList.remove('hidden');
+            document.getElementById('btnEditSalengProfile').classList.remove('hidden');
+
+            document.getElementById('salengName').innerText = salengProfile.name;
+            document.getElementById('salengPoints').innerText = salengProfile.points;
+            renderJobs();
+        }
+
+        // Add Points Simulation
+        function addSalengPoints() {
+            salengProfile.points += 200;
+            document.getElementById('salengPoints').innerText = salengProfile.points;
+            localStorage.setItem('zaleng_saleng_data', JSON.stringify(salengProfile));
+            showToast('เติมแต้มสำรอง +200 แต้ม เรียบร้อยแล้ว');
+        }
+
+        // Toggle Sections
+        function toggleSalengSection(sectionId) {
+            const mapSection = document.getElementById('salengMap');
+            const paySection = document.getElementById('salengPay');
+            const btnMap = document.getElementById('btnSalengMap');
+            const btnPay = document.getElementById('btnSalengPay');
+
+            if (sectionId === 'salengMap') {
+                mapSection.classList.remove('hidden');
+                paySection.classList.add('hidden');
+
+                btnMap.className = "bg-amber-50 border-2 border-amber-500 text-amber-700 p-4 rounded-xl flex flex-col items-center justify-center space-y-2 hover:bg-amber-100 active:scale-95 transition shadow-sm";
+                btnPay.className = "bg-gray-50 border-2 border-gray-200 text-gray-500 p-4 rounded-xl flex flex-col items-center justify-center space-y-2 hover:bg-gray-100 active:scale-95 transition shadow-sm";
+            } else {
+                paySection.classList.remove('hidden');
+                mapSection.classList.add('hidden');
+
+                btnPay.className = "bg-blue-50 border-2 border-blue-500 text-blue-700 p-4 rounded-xl flex flex-col items-center justify-center space-y-2 hover:bg-blue-100 active:scale-95 transition shadow-sm";
+                btnMap.className = "bg-gray-50 border-2 border-gray-200 text-gray-500 p-4 rounded-xl flex flex-col items-center justify-center space-y-2 hover:bg-gray-100 active:scale-95 transition shadow-sm";
+            }
+        }
+
+        // Render Active Jobs
+        function renderJobs() {
+            const jobList = document.getElementById('jobList');
+            document.getElementById('jobCount').innerText = activeJobs.length;
+
+            if (activeJobs.length === 0) {
+                jobList.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">ไม่มีงานรับขยะในบริเวณใกล้เคียงขณะนี้</p>`;
+                return;
+            }
+
+            jobList.innerHTML = activeJobs.map(job => `
+                <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-bold text-gray-800 text-xs">${job.name}</p>
+                            <p class="text-[11px] text-amber-700 font-medium"><i class="fa-solid fa-location-dot mr-1"></i>${job.address} (${job.distance} กม.)</p>
+                        </div>
+                        <span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                            ${job.status}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100">${job.desc}</p>
+                    <button onclick="openCalcModal(${job.id})" class="w-full bg-amber-500 hover:bg-amber-600 text-white text-xs py-1.5 rounded-lg font-bold transition shadow-sm flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-calculator mr-1"></i>
+                        <span>คำนวณความคุ้มค่า & รับงาน</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Open Calc Modal
+        function openCalcModal(id) {
+            selectedJobForCalc = activeJobs.find(j => j.id === id);
+            if (!selectedJobForCalc) return;
+
+            document.getElementById('calcJobName').innerText = `จุดรับ: ${selectedJobForCalc.name} (${selectedJobForCalc.address})`;
+            document.getElementById('calcJobDesc').innerText = selectedJobForCalc.desc;
+            document.getElementById('calcDistance').value = selectedJobForCalc.distance;
+
+            calculateCost();
+            document.getElementById('calcModal').classList.remove('hidden');
+        }
+
+        // Close Calc Modal
+        function closeCalcModal() {
+            document.getElementById('calcModal').classList.add('hidden');
+            selectedJobForCalc = null;
+        }
+
+        // Calculate Cost Function
+        function calculateCost() {
+            const distance = parseFloat(document.getElementById('calcDistance').value) || 0;
+            const fuelPrice = parseFloat(document.getElementById('calcFuelPrice').value) || 0;
+            const fuelRate = parseFloat(document.getElementById('calcFuelRate').value) || 0;
+
+            // สูตร: ระยะทาง * ราคาน้ำมัน/ลิตร * ลิตรที่ต้องใช้ต่อ 1 โล
+            const totalCost = distance * fuelPrice * fuelRate;
+
+            document.getElementById('calcResultCost').innerText = totalCost.toFixed(2) + ' บาท';
+        }
+
+        // Confirm Accept Job after Calculation
+        function confirmAcceptJob() {
+            if (!selectedJobForCalc) return;
+
+            activeJobs = activeJobs.filter(j => j.id !== selectedJobForCalc.id);
+            renderJobs();
+            closeCalcModal();
+            showToast('รับงานสำเร็จ! กำลังนำทางไปรับขยะ');
+        }
+
+        // Focus Job from Map Pin Click
+        function focusJob(id) {
+            const job = activeJobs.find(j => j.id === id);
+            if (job) {
+                showToast(`จุดรับขยะ: ${job.name} (${job.address}) - ระยะทาง ${job.distance} กม.`);
+            }
+        }
+
+        // Transfer Points to User
+        function transferPoints() {
+            const target = document.getElementById('payTargetSelect').value;
+            const points = parseInt(document.getElementById('payPointsInput').value);
+
+            if (!points || points <= 0) {
+                showToast('กรุณาระบุจำนวนแต้มให้ถูกต้อง', 'error');
+                return;
+            }
+
+            if (salengProfile.points < points) {
+                showToast(`แต้มของคุณไม่เพียงพอ (คงเหลือ ${salengProfile.points} แต้ม)`, 'error');
+                return;
+            }
+
+            // Deduct Saleng points
+            salengProfile.points -= points;
+            document.getElementById('salengPoints').innerText = salengProfile.points;
+            localStorage.setItem('zaleng_saleng_data', JSON.stringify(salengProfile));
+
+            showToast(`โอน ${points} แต้ม ให้ ${target} สำเร็จ!`);
+            document.getElementById('payPointsInput').value = '';
+            toggleSalengSection('salengMap');
+        }
+
+        // Edit Saleng Profile
+        function editSalengProfile() {
+            document.getElementById('salengInputName').value = salengProfile.name;
+            document.getElementById('salengInputPhone').value = salengProfile.phone;
+            document.getElementById('salengInputZone').value = salengProfile.zone;
+
+            document.getElementById('salengDashboard').classList.add('hidden');
+            document.getElementById('salengRegisterScreen').classList.remove('hidden');
+        }
+
+        // Custom Toast Notification
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            if (type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-red-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-amber-400";
+            }
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
